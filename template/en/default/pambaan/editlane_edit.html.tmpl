@@ -1,0 +1,106 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Bugzilla Example Plugin.
+  #
+  # The Initial Developer of the Original Code is Canonical Ltd.
+  # Portions created by Canonical Ltd. are Copyright (C) 2009
+  # Canonical Ltd. All Rights Reserved.
+  #
+  # Contributor(s): 
+  #     Marco Pauls <info@mgp-it-de>
+  #%]
+        <table class="pambaan_styled_table header_in_column">
+            <tbody>
+                <tr><th>ID</th>                 
+                    <td class="idcol">[% pambaan_lane.id %]
+                    [%IF pambaan_lane.board_id %]
+                    <input type="hidden" id="lane_board_id" name="lane_board_id" value="[%pambaan_lane.board_id%]"/>
+                    <input type="hidden" id="board_id" name="board_id" value="[%pambaan_lane.board_id%]"/>
+                    [% END %]
+                    [%IF pambaan_lane.id %]
+                    <input type="hidden" id="lane_id" name="lane_id" value="[%pambaan_lane.id%]"/>
+                    [% END %]
+                    </td>
+                </tr>
+                <tr><th><label for="lane_name" title="Distinguishing name for the lane. Mandatory.">Name</label></th>
+                    <td><input id="lane_name" name="lane_name" type="text" size="60" maxlength="127" value="[% pambaan_lane.name %]"/></td>
+                </tr>
+                <tr><th><label for="lane_description" title="Description for the lane.">Description</label></th>
+                    <td><textarea id="lane_description" name="lane_description" rows="3" cols="60">[% pambaan_lane.description %]</textarea></td>
+                </tr>
+                <tr><th><label for="lane_namedquery_name_and_sharer_id" title="Shared Search which will be used to populate the lane with [% terms.Bugs %]. Search must be shared with the pambaan group.">Population Query</label></th>
+                    <td>
+                    [% IF pambaan_shared_searches.size %]
+                        [% PROCESS build_select_options %]
+                    [% ELSE %]
+                        <span class="warning">There are no saved searches shared with the <em>pambaan</em> group!</span><br/>Please share at least one search!
+                    [% END %]
+                    </td>
+                </tr>
+                <tr><th><label for="lane_wip_warning_threshold" title="Number of bugs in lane wherefrom to indicate that there is soon too much Work In Progress">Warning threshold</label></th>
+                    <td><input id="lane_wip_warning_threshold" name="lane_wip_warning_threshold" type="text" size="3" maxlength="3" value="[% pambaan_lane.wip_warning_threshold %]"/></td>
+                </tr>
+                <tr><th><label for="lane_wip_overload_threshold" title="Number of bugs in lane wherefrom to indicate that there is too much Work In Progress">Overload threshold</label></th>
+                    <td><input id="lane_wip_overload_threshold" name="lane_wip_overload_threshold" type="text" size="3" maxlength="3" value="[% pambaan_lane.wip_warning_threshold %]"/></td>
+                </tr>                
+
+                <tr><th><label for="lane_space_occupied" title="Space occupied in relation to standard [% terms.lanes %]">Sspace occupied</label></th>
+                    <td><select id="lane_space_occupied" name="lane_space_occupied">
+                            <option value="0" [% 'selected' UNLESS pambaan_lane.space_occupied  %]>---</option>
+                            <option value="2" [% 'selected' IF pambaan_lane.space_occupied == 2 %]>double</option>
+                            <option value="3" [% 'selected' IF pambaan_lane.space_occupied == 3 %]>triple</option>                                                                                    
+                        </select>
+                </tr>
+
+                <tr><th><label for="lane_color" title="This can be a CSS class name (with leading dot .), a HTML Color name, or a HEX, rgb or rgba color ...">Color</label></th>
+                    <td><input id="lane_color" name="lane_color" type="text" size="60" maxlength="127" value="[% pambaan_lane.color %]"/></td>
+                </tr>
+                <tr><th><label for="lane_sortkey">Sort order</label></th>
+                    <td><input id="lane_sortkey" name="lane_sortkey" type="text" size="5" maxlength="5" value="[% pambaan_lane.sortkey %]"/></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        
+[% BLOCK build_select_options %]
+    [% optionslist = '' %]
+    [% selected = 0 %]
+    [% FOREACH search IN pambaan_shared_searches %]
+        [% PROCESS search_as_option %]
+    [% END %]
+                    <select id="lane_namedquery_name_and_sharer_id" name="lane_namedquery_name_and_sharer_id">
+    [% IF selected %]
+                        <option value="('','')">---</option>
+    [% ELSE %]
+                        <option value="('','')" selected>---</option> 
+    [% END %]
+        [% optionslist %]
+                    </select>
+[% END %]
+
+[% BLOCK search_as_option %]
+    [% searchname = search.name FILTER html %]
+    [% selectedname = pambaan_lane.namedquery_name FILTER html %]
+    
+    [% an_option = PROCESS generate_option_tag %]
+    [% optionslist = optionslist _ an_option %]
+
+[% END %]
+
+
+[% BLOCK generate_option_tag %]
+
+                        <option value="('[% searchname %]',[% search.userid %])" 
+                        [% IF (search.userid == pambaan_lane.namedquery_sharer_id AND searchname == selectedname ) %]
+                            selected
+                        [% END %]>[% searchname %]</option>
+[% END %]

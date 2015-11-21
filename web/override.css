@@ -1,0 +1,72 @@
+/* ====================================================================================================
+    Style sheet for overriding Bugzilla's style sheet so that the content will have a Flexbox layout.
+    This involves
+    - setting box-sizing model to border-box for all elements
+    - making the body a Flex Parent
+    - making #bugzilla-body also a Flex Parent and a Flex Item
+   ==================================================================================================== */
+* {
+    box-sizing: border-box;
+}
+
+html, body { 
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+}
+
+body { 
+    padding: 12px; 
+}
+
+/* Give the body a flex layout with column layout
+   and let the content cover the full window height.
+*/
+body {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+            flex-direction: column;
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+            justify-content: space-between;
+    -webkit-box-align: stretch;
+    -webkit-align-items: stretch;
+            align-items: stretch;
+}
+
+
+/* The Bugzilla body will also have a column layout
+   which content will cover the full remaining height.
+*/
+
+#bugzilla-body {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+            flex-direction: column;
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+            justify-content: space-between;
+    -webkit-box-align: stretch;
+    -webkit-align-items: stretch;
+            align-items: stretch;
+    /* The body itself is also a flex item */
+    -webkit-box-flex: 1;
+    -webkit-flex-grow: 1;
+            flex-grow: 1;
+}
+
+#bugzilla-body {
+    background-color: LightGray;
+    padding: 2px 4px 2px 4px;
+    min-height: 3em;
+}

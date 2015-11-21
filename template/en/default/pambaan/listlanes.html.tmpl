@@ -1,0 +1,101 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Bugzilla Example Plugin.
+  #
+  # The Initial Developer of the Original Code is Canonical Ltd.
+  # Portions created by Canonical Ltd. are Copyright (C) 2009
+  # Canonical Ltd. All Rights Reserved.
+  #
+  # Contributor(s): 
+  #     Marco Pauls <info@mgp-it-de>
+  #%]
+
+    <hr/>
+
+    [% UNLESS editmode %]
+        [% laneslink = 'page.cgi?id=pambaan/lanes.html&action=lanes&board_id=' _ pambaan_board.id FILTER url %]
+        <table class="header_in_column">
+            <tr>
+                <th><a href="[% laneslink %]">Edit [% terms.lanes %]</a></th>
+                <td>
+    [% END %]
+    [% IF pambaan_board.has_lanes %]
+        [% PROCESS board_lanes %]
+    [% END -%]
+    [% UNLESS editmode %]
+                </td>
+            </tr>
+        </table>
+    [% END %]
+    
+    [% BLOCK board_lanes %]
+        <table class="pambaan_styled_table">
+            <thead>
+                <tr>
+                    <th>ID</th><th>Name</th>
+                    <th>Description</th>
+                    <th>Populated by Query</th>
+                    <th>Warning threshold</th>
+                    <th>Overload threshold</th>
+                    <th>Space occupied</th>
+                    <th>[% terms.Lane %]'s Color</th>
+                    <th>Sort</th>[% '<th/>' IF editmode %]
+                </tr>
+            </thead>
+            <tbody>
+        [% lanes = pambaan_board.lanes %]
+            [% FOREACH lane IN lanes %]
+            [% PROCESS a_lane %]
+        [% END %]
+            </tbody>
+        </table>
+    [% END %]  
+  
+    [% BLOCK a_lane %]
+                    <tr><td class="idcol">[% lane.id %]</td>
+        [% IF editmode AND user.in_group( 'admin' ) %]
+            [% editlink = 'page.cgi?id=pambaan/editlane.html&action=editlane&board_id=' _ pambaan_board.id _'&lane_id=' _ lane.id FILTER url %]
+                        <td><a href="[% editlink %]">[% lane.name -%]</a>
+        [% ELSE %]                        
+                        <td>[% lane.name -%]
+        [% END %]                
+                        </td><td>[% lane.description %]</td>
+                        <td>[% lane.namedquery_name %]</td>
+                        <td>[% lane.wip_warning_threshold  IF lane.wip_warning_threshold %]</td>
+                        <td>[% lane.wip_overload_threshold IF lane.wip_overload_threshold %]</td>
+                        <td>[% lane.space_occupied_text %]</td>
+                        [% PROCESS a_color -%]
+
+                        <td>[% lane.sortkey %]</td>
+        [% IF editmode %]    
+            [% IF user.in_group( 'admin' ) %]
+ 
+            [% deletelink = 'page.cgi?id=pambaan/lanes.html&action=deletelane&board_id=' _ pambaan_board.id _'&lane_id=' _ lane.id FILTER url %]
+                        <td><a href="[% urlbase FILTER html IF full_url %][% deletelink %]"><img src="[% urlbase FILTER html IF full_url %]extensions/PAMBAAN/web/images/muell2.png">Delete</a></td>
+            [% ELSE %]
+                        <td>&nbsp;</td><td>&nbsp;</td>
+            [% END %]
+        [% END %]
+                    </tr> 
+    [% END%]
+    
+    [% BLOCK a_color -%]
+    [% colordef = lane.color_type %]
+    [% IF colordef.type == 'CSS Class' %]
+        <td class="[% colordef.value %]"
+    [% ELSE -%]
+        <td style="background-color: [% colordef.value %]"
+    [% END -%]
+    >[% lane.color %]</td>
+
+    [% END %]
+

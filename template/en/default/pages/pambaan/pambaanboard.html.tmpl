@@ -1,0 +1,118 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Bugzilla Example Plugin.
+  #
+  # The Initial Developer of the Original Code is Canonical Ltd.
+  # Portions created by Canonical Ltd. are Copyright (C) 2009
+  # Canonical Ltd. All Rights Reserved.
+  #
+  # Contributor(s): 
+  #     Marco Pauls <info@mgp-it-de>
+  #%]
+
+[% PROCESS "global/field-descs.none.tmpl" %]
+
+[% title = BLOCK %] [% terms.PAMBAAN %][% END %]
+
+[% PROCESS global/header.html.tmpl
+    title = title
+%]
+
+<!-- -------------------- This is pambaanboard.html ------------------------------ -->
+        
+            <div id="pambaanboard_header">
+                <form method="GET" action="[% urlbase FILTER html IF full_url %]page.cgi">
+                <input type="hidden" name="id" value="pambaan/pambaanboard.html"/>
+                <label for="pambann_board_selector">You are currently viewing [% terms.Board %]</label>
+                [% IF all_pambaan_boards.size > 1 %]
+                    <select id="pambaan_board_selector" name="current_board_id">
+                        <optgroup label="Global Boards" class="pambaan_global">
+                            [% FOREACH b IN all_pambaan_boards %]
+                            <option value="[% b.id %]" [% 'selected' IF b.id == current_pambaan_board.id %]>[% b.name %]</option>
+                            [% END %]
+                        </optgroup>
+                    </select> 
+                    <button type="submit" name="action" value="changeboard"><img src="./extensions/PAMBAAN/web/images/refresh.png"></button>
+                [% ELSE %]
+                    <input id="pambaan_board_selector" type="text" class="pambaan_global" value="[% current_pambaan_board.name %]" readonly />
+                [% END %]
+                </form>
+            </div>
+            
+            <div id="pambaanboard">
+            [% lanes = current_pambaan_board.lanes %]
+            [% FOREACH lane IN lanes %]
+                [% PROCESS a_lane %]               
+            [% END %]
+            
+            </div>
+
+<!-- --------------------  End of pambaanboard.html ------------------------------ -->
+
+
+[% BLOCK a_lane %]
+            <div id="lane[% loop.count %]" class="pambaanboard_lane withbugcount [%+ 'pambaan_grow_' _ lane.space_occupied_text IF lane.space_occupied %]">
+        [% IF lane.has_bugs %]
+            
+            [% IF lane.is_warning  %]
+                <span class="bugcount" title="You should not have more than [% lane.wip_warning_threshold %] [%+ terms.bugs %] in this [% terms.lane %]">
+                <img src="[% urlbase FILTER html IF full_url %]extensions/PAMBAAN/web/images/attention.png"/></span>[% END %]
+            [% IF lane.is_overload %]
+                <span class="bugcount" title="You must not have more than [% lane.wip_overlaod_threshold %] [%+ terms.bugs %] in this [% terms.lane %]">
+                <img src="[% urlbase FILTER html IF full_url %]extensions/PAMBAAN/web/images/stop.png"/></span>[% END %]
+            <span class="bugcount">[% lane.bugcount %]</span>
+        [% END %]
+
+                    <div class="pb_laneheader [% PROCESS a_color %] title='This is "[% lane.name %]" populated by "[% lane.namedquery_name %]"'>
+                        <div class="pb_lanebuttons">&ominus;</div>
+                        <h2>[% lane.name %]</h2>
+                    </div>
+                    <ul class="pb_lanecontent">
+                        [% bugs = lane.bugs %]
+                        [% FOREACH lanebug IN bugs %]
+                            [% PROCESS a_bug %]               
+                        [% END %] 
+                    </ul> 
+            </div>
+
+
+[% END %]
+
+
+[% BLOCK a_bug %]
+                <li class="[% lanebug.bug_status | replace('\s+', '_') %]">
+                    <div class="pb_cardfirst">
+                        <span class="pb_bugid"><a href="[% urlbase FILTER html IF full_url %]show_bug.cgi?id=[% lanebug.bug_id FILTER uri %]">[% lanebug.bug_id %]</a></span>
+                        <span><strong>[% lanebug.product %]</strong><br/>&roarr;&nbsp;[% lanebug.component %]</strong></span>
+                    </div>
+                    <div class="pb_cardother" title="[% lanebug.short_desc %]">[% lanebug.short_desc %]</div>
+                    <div class="pb_cardother" title="Importance: [% lanebug.priority %] | [% lanebug.bug_severity %]">
+                        Importance: <span class="[% lanebug.priority %]">[% lanebug.priority %]</span> | <span class="[% lanebug.bug_severity %]">[% lanebug.bug_severity %]</span>
+                    </div>
+                    <div class="pb_cardother right"><strong>[%lanebug.bug_status %]</strong></div>
+                    <div class="pb_cardother"><strong>Assignee:</strong> [% lanebug.assigned_to_realname %]</div>
+                </li>
+                
+                
+[% END %]
+
+[% BLOCK a_color -%]
+    [% colordef = lane.color_type %]
+    [% IF colordef.type == 'CSS Class' %]
+        [% colordef.value %]"
+    [% ELSE -%]
+        " style="background-color: [% colordef.value %]"
+    [% END -%]
+[% END -%]
+
+</div></body>
+[%# PROCESS global/footer.html.tmpl %]

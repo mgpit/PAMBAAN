@@ -1,0 +1,75 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Bugzilla Example Plugin.
+  #
+  # The Initial Developer of the Original Code is Canonical Ltd.
+  # Portions created by Canonical Ltd. are Copyright (C) 2009
+  # Canonical Ltd. All Rights Reserved.
+  #
+  # Contributor(s): 
+  #     Marco Pauls <info@mgp-it-de>
+  #%]
+
+[% PROCESS "global/field-descs.none.tmpl" %]
+
+[% title = BLOCK %]Edit [% terms.Boards %][% END %]
+[% subheader = BLOCK %]This lets you edit [% terms.Boards %][% END %]
+
+[% PROCESS global/header.html.tmpl
+    title = title
+    subheader = subheader
+%]
+
+    <h2>[% terms.Boards %]</h2>
+    <table id="admin_table" class="pambaan_styled_table">
+        <thead>
+            <tr>
+                <th>Name</th><th>Description</th><th>[% terms.Lanes %]</th><th>&nbsp;</th>
+            </tr>
+        </thead>
+        
+        <tbody>
+        
+            [% FOREACH board IN all_pambaan_boards %]
+                 [% PROCESS a_board %]
+            [% END %]
+        
+        </tbody>
+        
+    </table>
+    
+    [% IF user.in_group( 'admin' ) %]
+        [% addlink = 'page.cgi?id=pambaan/editboard.html&action=newboard' FILTER url %]
+        <p><a href="[% urlbase FILTER html IF full_url %][% addlink %]">&oplus;&nbsp;Add&nbsp;Board</a></p>
+    [% END %]        
+
+[% BLOCK a_board %]
+    <tr>
+        [% IF user.in_group( 'admin' ) %]
+        [% editlink = 'page.cgi?id=pambaan/editboard.html&action=editboard&board_id=' _ board.id  FILTER url %]
+        <td [% 'class="defaultboard"' IF board.defaultBoard %]><a href="[% urlbase FILTER html IF full_url %][% editlink %]"> [% board.name %]</a></td>
+        [% ELSE %]
+        <td [% 'class="defaultboard"' IF board.defaultBoard %]>[% board.name %]</td>
+        [% END %]
+        
+        <td>[% board.description %]</td><td>[% board.number_of_lanes %]</td>
+        
+        [% IF user.in_group( 'admin' ) %]
+        [% deletelink = 'page.cgi?id=pambaan/boards.html&action=deleteboard&board_id=' _ board.id FILTER url %]
+        <td><a href="[% urlbase FILTER html IF full_url %][% deletelink %]"><img src="[% urlbase FILTER html IF full_url %]extensions/PAMBAAN/web/images/muell2.png">Delete</a></td>
+        [% ELSE %]
+        <td>&nbsp;</td><td>&nbsp;</td>
+        [% END %]
+   </tr>
+[% END %]
+
+[% PROCESS global/footer.html.tmpl %]

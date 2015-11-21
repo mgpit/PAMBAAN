@@ -1,0 +1,58 @@
+    [% IF    error == "pambaan_no_sharer_id" %]
+        [% title = "Incomplete Lane" %]
+        Lane &bdquo;[% lane.name %]&ldquo; in Board &bdquo;[% pambaan_board.name %]&ldquo; has no sharer_id.
+        <hr>
+        Please assing a (Shared) Search to the Lane!
+    [% ELSIF    error == "pambaan_no_query_name" %]
+        [% title = "Incomplete Lane" %]
+        Lane &bdquo;[% lane.name %]&ldquo; in Board &bdquo;[% pambaan_board.name %]&ldquo; has no named query.
+        <hr>
+        Please assing a (Shared) Search to the Lane!
+
+    [% ELSIF    error == "pambaan_no_pambaan_board" %]
+        [% title = "Inconsistency" %]
+        Cannot add/update a Lane without a board!
+
+    
+    [%# <!-- Board Validator Messages --> %]
+
+
+    [% ELSIF    error == "pambaan_board_blank_name" %]
+        [% title = "Blank Board Name not allowed" %]
+        You must enter a name for the board!
+
+    [% ELSIF    error == "pambaan_board_name_too_long" %]
+        [% title = "Board Name too long" %]
+        The name of a board is limited to [% namelimit %] characters. '[% name FILTER html %]' is too long ([% name.length %] characters).
+
+    [% ELSIF error == "pambaan_board_name_already_in_use" %]
+        [% title = "Board name already exists" %]
+        The product name '[% board FILTER html %]' already exists.
+
+    [% ELSIF error == "pambaan_board_name_diff_in_case" %]
+        [% title = "Board name differs only in case" %]
+        The product name '[% board FILTER html %]' differs from existing 
+        product '[% existing_board FILTER html %]' only in case.
+        
+    [% ELSIF    error == "pambaan_board_blank_description" %]
+        [% title = "Blank Board Description not allowed" %]
+        You must enter a description for the board!          
+
+
+    [%# <!-- Lane Validator Messages --> %]
+
+
+    [% ELSIF    error == "pambaan_lane_blank_name" %]
+        [% title = "Blank " _ terms.Lane _ "Name not allowed" %]
+        You must enter a name for the lane!
+
+    [% ELSIF    error == "pambaan_lane_must_be_numeric" %]
+        [% title = "No Number!" %]
+        The value for &laquo;[% field_descs.$field FILTER html %]&raquo; must be numeric. Got [% value FILTER html %]
+
+    [% ELSIF    error == "pambaan_lane_must_be_positive" %]
+        [% title = "Negative Value!" %]
+        The value for &laquo;[% field_descs.$field FILTER html %]&raquo; must be a positive number. Got [% value FILTER html %]
+
+
+    [% END %].

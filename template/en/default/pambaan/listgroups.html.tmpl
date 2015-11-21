@@ -1,0 +1,92 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Bugzilla Example Plugin.
+  #
+  # The Initial Developer of the Original Code is Canonical Ltd.
+  # Portions created by Canonical Ltd. are Copyright (C) 2009
+  # Canonical Ltd. All Rights Reserved.
+  #
+  # Contributor(s): 
+  #     Marco Pauls <info@mgp-it-de>
+  #%]
+
+    <hr/>
+
+    [% UNLESS editmode %]
+        [% groupslink = 'page.cgi?id=pambaan/groups.html&action=groups&board_id=' _ pambaan_board.id FILTER url %]
+        <table class="header_in_column">
+            <tr>
+                <th><a href="[% groupslink %]">Edit Group Access</a></th>
+                <td>
+    [% END %]
+    
+    [% PROCESS board_groups %]
+    
+    [% UNLESS editmode %]
+                </td>
+            </tr>
+        </table>
+    [% END %]
+    
+    [% BLOCK board_groups %]
+        [% IF editmode %]
+            [% PROCESS edit_groups %]
+        [% ELSE %]
+            [% IF pambaan_board.has_groups %]
+                <ul class="grouplist">
+                [% USE scalar %]
+                [%# As the groups method will return an array with two array refs in list context %]
+                [% SET groups = pambaan_board.scalar.groups %]
+                [% FOREACH group IN groups %]
+                    <li>[% group.name %]</li>
+                [% END %]
+                </ul>
+            [% ELSE %]
+                <strong>No group access defined!</strong>
+            [% END %]
+        [% END %]  
+    [% END %]
+  
+  
+    [% BLOCK edit_groups %]
+        <form id="editboardgroups" method="post" action="[% urlbase FILTER html IF full_url %][% 'page.cgi?id=pambaan/groups.html' FILTER url %]">
+            <input type="hidden" name="board_id" value="[% pambaan_board.id %]"/>
+            <table>
+                <tr>
+                    <th>Groups available</th>
+                    <th>Groups assigned</th>
+                </tr>
+                <tr>
+                    <td>
+                        <select multiple id="pambaan_board_groups_available" name="pambaan_board_groups_available" size="10" class="pambaan_grouplist">
+                            [% FOREACH group IN groups_not_assigned %]
+                            <option value="[% group.id %]">[% group.name FILTER html %]</option>
+                            [% END %]
+                        </select>
+                    </td>
+
+                    <td>
+                        <select multiple id="pambaan_board_groups_assigned" name="pambaan_board_groups_assigned" size="10" class="pambaan_grouplist">
+                            [% FOREACH group IN groups_assigned %]
+                            <option value="[% group.id %]">[% group.name FILTER html %]</option>
+                            [% END %]                            
+                        </select>                
+                    </td>
+                </tr>
+                <tr>
+                    <td class="centertext">&oplus; Select to add</td>
+                    <td class="centertext">&ominus; Select to remove</td>
+                </tr>
+           </table>
+           <button type="submit" name="action" value="updategroups">Save Changes</button>
+       </form>       
+    [% END %]

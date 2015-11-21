@@ -1,0 +1,285 @@
+/* ********************************************************************** 
+ * Layouts for the PAMBAAN extension.
+ *
+ * ********************************************************************** */
+ 
+/* ----------------------------------------------------------------------
+   First all the stuff related to the Flex Layout ...
+   Remember: in override.css the #bugzilla-body has been made a 
+             Flex Parent and a Flex Item
+   
+   Try to control the layout of the items via parent, only ...
+   
+   ---------------------------------------------------------------------- */ 
+ 
+#pambaanboard {
+    -webkit-box-flex: 1;
+    -webkit-flex-grow: 1;
+            flex-grow: 1;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+            justify-content: space-between;
+    -webkit-box-align: stretch;
+    -webkit-align-items: stretch;
+            align-items: stretch;
+    overflow: hidden;
+}
+
+.pambaanboard_lane {
+    -webkit-box-flex: 1;
+    -webkit-flex-grow: 1;
+            flex-grow: 1;
+    overflow: hidden;
+}
+
+.pambaan_grow_double {
+    -webkit-box-flex: 2;
+    -webkit-flex-grow: 2;
+            flex-grow: 2;
+}
+
+.pambaan_grow_triple {
+    -webkit-box-flex: 3;
+    -webkit-flex-grow: 3;
+            flex-grow: 3;
+}
+
+
+/* ----------------------------------------------------------------------
+   The other layout Stuff
+   ---------------------------------------------------------------------- */
+
+#pambaanboard_header {
+    margin: 0 2px 2px 2px; 
+    padding: 0 4px 2px 4px;
+    font-size: 76%;
+    text-align: right;
+    background-color: rgba( 96,96,96,0.1);
+}
+
+.pambaanboard_lane {
+    margin-left: 2px; margin-right: 2px; margin-top: 0px;
+    border: dotted gray 1px;
+    width: 1ex; min-height: 3em;
+    overflow: auto;
+}
+
+.pb_laneheader h2 {
+    margin: 2px 2px 1ex 2px; 
+    padding: 1px 1px 3px 1px; margin: 0;
+    text-align: center;
+}
+
+ul.pb_lanecontent {
+    margin: 2px; 
+    padding: 0;
+    list-style: none;
+    clear: both;
+    font-size: 76%;
+}
+
+/* ----------------------------------------------------------------------
+   Some controls
+   ---------------------------------------------------------------------- */
+
+#pambaanboard_header input[type=text], 
+#pambaanboard_header select, 
+#pambaanboard_header option, 
+#pambaanboard_header button {
+    font-size: inherit;
+    padding: 1px 3px 1px 3px; margin: 1px;
+    line-height: inherit;
+    vertical-align: middle;
+}
+
+#pambaanboard_header input[type=text] {
+    background-color: rgba(255,255,255,0.9);
+    border: solid gray 1px;
+    border-radius: 3px;
+}
+
+/* ---------------------------------------------------------------------- */
+
+.withbugcount {
+    /*position: relative;*/
+}
+
+.bugcount {
+    float: left;
+    font-size: 11px;
+    font-weight: bold;
+    height: 20px; min-width: 20px; line-height: 18px;
+    text-align: center; vertical-align: middle;
+    background-color: SlateGray; 
+    color: white; 
+    border: solid lightgray 1pt;   
+    border-radius: 3px;
+    box-shadow: 0 0 3px 3px rgba(96,96,96, 0.5);
+    display: inline-block; margin-right: 3px; margin-left: 3px;
+}
+
+
+/* ----------------------------------------------------------------------
+   ---------------------------------------------------------------------- */
+
+.pambaan_global, .pambaan_personal {
+    background-repeat: no-repeat;
+    background-position: 2px 2px;
+    padding-left: 16px !important;
+}
+
+.pambaan_global {
+    background-image:url(images/globe.png);
+}
+
+.pambaan_personal {
+    background-image:url(images/person.png);
+}
+
+.pb_lanebuttons {
+    min-width: 1em;
+    text-align: center;
+    float: right;
+    padding: 0 2px 0 2px;
+}
+
+ul.pb_lanecontent li {
+    margin: 5px 5px 0 0;
+    padding: 3px;
+    border: solid gray 1px;
+    border-radius: 5px;
+    display: inline-block;
+    width: 12rem; max-width: 12rem;
+    box-shadow: 2px 2px 3px 0 rgba( 127,127,127, 0.7 );
+}
+
+/* ----------------------------------------------------------------------
+   The Pambaan Card
+   ---------------------------------------------------------------------- */
+
+div.pb_cardother, div.pb_cardfirst {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+div.pb_cardother {
+    border-top: dotted gray 1px;
+    margin-top: 2px;
+}
+
+
+span.pb_bugid {
+    margin: 0 3px 0 3px; 
+    padding: 0 2px 0 2px;
+    border: dotted gray 1px;
+    background-color: rgba( 127,127,17, 0.3 );
+}
+
+.right {
+    text-align: right; padding-right: 0.7ex;
+}
+
+
+/* ----------------------------------------------------------------------
+   The Admin Panel
+   ---------------------------------------------------------------------- */
+
+.pambaan_styled_table {
+    background-color: rgba( 255,255,255, 0.3 );
+    margin: 0 1ex 1ex 1ex;
+    border-collapse: collapse;
+    border: solid gray 2px;
+}
+
+.pambaan_styled_table td, .pambaan_styled_table th {
+    border: solid gray 1px;
+    padding: 0.33ex 1ex 0.33ex 1ex;
+}
+
+.pambaan_styled_table th {
+    background-color: rgba( 127,127,127, 0.7 );
+}
+
+.header_in_column th {
+    text-align: right;
+    padding-right: 1ex;
+    vertical-align: top;
+}
+
+.header_in_column th label:after,
+.header_in_column th label::after {
+    content: ":";
+}
+
+
+label[title]::before {
+    content: "?";
+    font-weight: normal;
+    font-size: 80%;
+    vertical-align: middle;
+    margin: 0 3px 0 0; padding: 2px;
+    background-color: rgba( 255, 255, 255, .1 );
+}
+
+.pambaan_styled_table td.idcol {
+    background-color: rgba( 204,204,204, 0.5 );
+    color: #404040;
+}
+
+.pambaan_styled_table td.defaultboard:before,
+.pambaan_styled_table td.defaultboard::before {
+    content: url( images/black_board.png );
+}
+
+ul.grouplist {
+    list-style: none;
+    margin: 0; padding: 0;
+}
+ul.grouplist li {
+    display: inline-block;
+    border-left: dotted gray 1px;
+    padding-left: 1ex; margin-left: 1ex;
+}
+
+
+.pambaan_grouplist {
+    min-width: 15rem;
+    margin-left: 1rem; margin-right: 1rem;
+}
+
+.centertext {
+    text-align: center;
+}
+
+/* ----------------------------------------------------------------------
+   Colors ... Colors ... Colors ...
+   ---------------------------------------------------------------------- */
+
+.red    { background-color: rgba( 196,   0,   0, 0.3 ) }
+.blue   { background-color: rgba(   0,   0, 196, 0.3 ) }
+.green  { background-color: rgba(   0, 196,   0, 0.3 ) }
+.orange { background-color: rgba( 255, 153,   0, 0.3 ) }
+.gray   { background-color: rgba( 127, 127, 127, 0.3 ) }
+
+
+/* ----------------------------------------------------------------------
+   Styling Bug priorities, severities and states ...
+   ---------------------------------------------------------------------- */
+
+.blocker    { font-weight: bold; color: orange; }
+.critical   { font-weight: bold; color: red; }
+.Normal     { color: blue; }
+
+.minor, .trivial, .Low, .Lowest {
+    font-style: italic;
+}
+
+.High       { font-weight: bold; color: orange;}
+.Highest    { font-weight: bold; color: red;}
+
+.enhancement { color: darkgreen; }
+

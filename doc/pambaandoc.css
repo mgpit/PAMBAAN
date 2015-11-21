@@ -1,0 +1,46 @@
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin 0; padding: 1ex;
+}
+
+h1 {
+    background-color: LightGray;
+    color: black;
+}
+
+h2, h3, h4 {
+    color: #404040;
+    border-top: LightGray dotted 1px;
+    border-bottom: LightGray solid 2px;
+}
+
+
+h1, h2, h3, h4, p {
+    padding-left: 1ex; padding-right: 1ex;
+    padding-top: 1ex;
+    border-radius: 3px;
+}
+
+pre {
+    border: solid LightSlateGray 1px;
+    background-color: beige;
+    border-radius: 1ex;
+    padding: 0;
+    margin: 0 0 0 4rem;
+}
+
+pre code {
+    border-radius: 1ex;
+    border-left: solid LightGray 1rem;
+    border-right: solid LightGray 1rem;
+    display: block;
+    padding: 1ex; margin: 0;
+}
+
+a, a:link, a:visited, a:hover {
+    color: DarkSlateGray;
+    text-decoration: none;
+}
