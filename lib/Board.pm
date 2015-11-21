@@ -22,11 +22,12 @@
 package Bugzilla::Extension::PAMBAAN::Board;
 use strict;
 
-our $version="0.2";
+
 
 use base qw(Bugzilla::Object Exporter);
 our @EXPORT = qw();   
-
+our $version="0.4.1";
+use constant NAME=>'PAMBAAN';
 
 use Data::Dumper;
 use Scalar::Util qw( blessed );
