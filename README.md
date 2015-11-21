@@ -5,5 +5,6 @@ This extension enhances your Bugzilla with a simple Kanban board. Tested with Bu
 
 Features
 * Define your own Kanban boards with any number of lanes (but they should somehow fit on the screen)
-* Populate each lane with a saved search / named query
 * Control access to boards by assigning them to groups
+* Populate each lane with a saved search / named query
+* Style the appearance of a lane (heding color, relative width)
