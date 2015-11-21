@@ -22,7 +22,8 @@
 package Bugzilla::Extension::PAMBAAN;
 use strict;
 
-our $version="0.2";
+our $version="0.4.1";
+use constant NAME => 'PAMBAAN';
 
 use base qw(Bugzilla::Extension Exporter);
 our @EXPORT = qw();  
@@ -33,6 +34,7 @@ use Bugzilla::User::Setting;
 use Bugzilla::Token;
 use Bugzilla::Constants;
 use Bugzilla::Util;
+use Bugzilla::Extension;
 
 
 use Bugzilla::Extension::PAMBAAN::Util;
