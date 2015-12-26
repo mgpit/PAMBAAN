@@ -46,15 +46,36 @@
                     [% END %]
                     </td>
                 </tr>
+                <tr>
+                    <th>&nbsp;<span title="Define if the Board should display only those [% terms.bugs %] where the current user is the assignee. Override [% terms.board %]'s settings.">Assignee Restriction</span></th>
+                    <td>
+                        [% current_restriction = pambaan_lane.restrict_to_assignee_currusr %]
+                        <input id="lane_restrict_to_assignee_currusr_INHERIT", name="lane_restrict_to_assignee_currusr" type="radio" value="" [% 'checked' UNLESS current_restriction %]
+                         title="Inherit. Take the [% terms.board %]'s setting.">
+                         <label for="lane_restrict_to_assignee_currusr_INHERIT"
+                         title="Inherit. Take the [% terms.board %]'s setting.">Inherit from [% terms.Board %]</input>                    
+           
+                        <input id="lane_restrict_to_assignee_currusr_YES", name="lane_restrict_to_assignee_currusr" type="radio" value="Y" [% 'checked' IF current_restriction == 'Y' %]
+                         title="Override to Yes. Restrict the [% terms.bugs %] fetched to those [% terms.bugs %] where the current user is the assignee">
+                         <label for="lane_restrict_to_assignee_currusr_YES"
+                         title="Override to Yes. Restrict the [% terms.bugs %] fetched to those [% terms.bugs %] where the current user is the assignee">Yes</input>
+           
+                        <input id="lane_restrict_to_assignee_currusr_NO", name="lane_restrict_to_assignee_currusr" type="radio" value="N" [% 'checked' IF current_restriction == 'N' %]
+                         title="Override to No. Use standard behaviour and display all the [% terms.bugs %] where the current has access">
+                         <label for="lane_restrict_to_assignee_currusr_NO"
+                         title="Override to No. Use standard behaviour and display all the [% terms.bugs %] where the current has access">No</input>
+                    </td>
+                </tr>
+                
                 <tr><th><label for="lane_wip_warning_threshold" title="Number of bugs in lane wherefrom to indicate that there is soon too much Work In Progress">Warning threshold</label></th>
                     <td><input id="lane_wip_warning_threshold" name="lane_wip_warning_threshold" type="text" size="3" maxlength="3" value="[% pambaan_lane.wip_warning_threshold %]"/></td>
                 </tr>
                 <tr><th><label for="lane_wip_overload_threshold" title="Number of bugs in lane wherefrom to indicate that there is too much Work In Progress">Overload threshold</label></th>
-                    <td><input id="lane_wip_overload_threshold" name="lane_wip_overload_threshold" type="text" size="3" maxlength="3" value="[% pambaan_lane.wip_warning_threshold %]"/></td>
+                    <td><input id="lane_wip_overload_threshold" name="lane_wip_overload_threshold" type="text" size="3" maxlength="3" value="[% pambaan_lane.wip_overload_threshold %]"/></td>
                 </tr>                
 
-                <tr><th><label for="lane_space_occupied" title="Space occupied in relation to standard [% terms.lanes %]">Sspace occupied</label></th>
-                    <td><select id="lane_space_occupied" name="lane_space_occupied">
+                <tr><th><label for="lane_space_occupied" title="Space occupied in relation to standard [% terms.lanes %]">Space occupied</label></th>
+                    <td> <select id="lane_space_occupied" name="lane_space_occupied">
                             <option value="0" [% 'selected' UNLESS pambaan_lane.space_occupied  %]>---</option>
                             <option value="2" [% 'selected' IF pambaan_lane.space_occupied == 2 %]>double</option>
                             <option value="3" [% 'selected' IF pambaan_lane.space_occupied == 3 %]>triple</option>                                                                                    
@@ -66,6 +87,26 @@
                 </tr>
                 <tr><th><label for="lane_sortkey">Sort order</label></th>
                     <td><input id="lane_sortkey" name="lane_sortkey" type="text" size="5" maxlength="5" value="[% pambaan_lane.sortkey %]"/></td>
+                </tr>
+                
+                <tr>
+                    <th><label title="Configure items displayed on the [% terms.Pambaan %] card.">Show on card</label></th>
+                    <td><table class="pambaan_styled_table">
+                        <tr>    <th><label for="lane_card_show_product">Product</label></th>
+                                <th><label for="lane_card_show_importance">Importance</label></th>
+                                <th><label for="lane_card_show_bug_status">Status</label></th>
+                                <th><label for="lane_card_show_asignee">Assignee</label></th>
+                                <th><label for="lane_card_show_timetracking">Timetracking</label></th>
+                            </tr>
+                        <tr>
+                            <td class="centertext"><input type="checkbox" id="lane_card_show_product"      name="lane_card_show_product"      [% 'checked' IF pambaan_lane.card_show_product %] > </td>
+                            <td class="centertext"><input type="checkbox" id="lane_card_show_importance"   name="lane_card_show_importance"   [% 'checked' IF pambaan_lane.card_show_importance %] > </td>
+                            <td class="centertext"><input type="checkbox" id="lane_card_show_bug_status"   name="lane_card_show_bug_status"   [% 'checked' IF pambaan_lane.card_show_bug_status %] > </td>
+                            <td class="centertext"><input type="checkbox" id="lane_card_show_asignee"      name="lane_card_show_asignee"      [% 'checked' IF pambaan_lane.card_show_asignee %] > </td>
+                            <td class="centertext"><input type="checkbox" id="lane_card_show_timetracking" name="lane_card_show_timetracking" [% 'checked' IF pambaan_lane.card_show_timetracking %] > </td>
+                        </tr>
+                        </table>
+                    </td>
                 </tr>
             </tbody>
         </table>

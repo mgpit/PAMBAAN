@@ -85,24 +85,50 @@ sub ddl {
     };
 }
 
-sub do_schema_0002 {
+sub do_schema_000200 {
 
     my $dbh = Bugzilla->dbh;
     my $column_info;
 
-    $column_info = $dbh->bz_column_info( tablename(), 'wip_warning_threshold' );
+    #$column_info = $dbh->bz_column_info( tablename(), 'wip_warning_threshold' );
     $dbh->bz_add_column( tablename(), 'wip_warning_threshold', { TYPE=>'INT2', NOTNULL=>0 } );
     
-    $column_info = $dbh->bz_column_info( tablename(), 'wip_overload_threshold' );
+    #$column_info = $dbh->bz_column_info( tablename(), 'wip_overload_threshold' );
     $dbh->bz_add_column( tablename(), 'wip_overload_threshold', { TYPE=>'INT2', NOTNULL=>0 } );
     
 
-    $column_info = $dbh->bz_column_info( tablename(), 'space_occupied' );
+    #$column_info = $dbh->bz_column_info( tablename(), 'space_occupied' );
     $dbh->bz_add_column( tablename(), 'space_occupied', { TYPE=>'INT2', NOTNULL=>0 } );
 
     
 }
 
+sub do_schema_000500 {
+    my $dbh = Bugzilla->dbh;
+    
+    $dbh->bz_add_column( tablename(), 'card_show_asignee',      { TYPE=>'BOOLEAN', NOTNULL=>1, DEFAULT=>'TRUE' } );
+    $dbh->bz_add_column( tablename(), 'card_show_importance',   { TYPE=>'BOOLEAN', NOTNULL=>1, DEFAULT=>'TRUE' } );
+    $dbh->bz_add_column( tablename(), 'card_show_product',      { TYPE=>'BOOLEAN', NOTNULL=>1, DEFAULT=>'TRUE' } );
+    $dbh->bz_add_column( tablename(), 'card_show_bug_status',   { TYPE=>'BOOLEAN', NOTNULL=>1, DEFAULT=>'TRUE' } );
+    $dbh->bz_add_column( tablename(), 'card_show_timetracking', { TYPE=>'BOOLEAN', NOTNULL=>1, DEFAULT=>'TRUE' } );
+}
+
+
+sub do_schema_000601 {
+    my $dbh = Bugzilla->dbh;
+    
+    $dbh->bz_add_column( tablename(), 'restrict_to_assignee_currusr', { TYPE=>'CHAR', NOTNULL=>0 } );    
+}
+
 1;
 
 __END__
+
+
+
+=head1 NAME
+
+Bugzilla::Extension::PAMBAAN::Schema::Tables::BoardLanes.
+
+The Schema definitions for the C<pambaan_lanes> table.
+=cut

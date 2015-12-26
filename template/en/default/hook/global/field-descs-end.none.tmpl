@@ -27,10 +27,11 @@
     # across all templates--see VARIABLES in Bugzilla/Template.pm.
     #%]
     
-  [% additional_field_descs = { "wip_warning_threshhold"    => "Warning Threshhold",
-                                "wip_overload_threshhold"   => "Overload Thresshold",
+  [% additional_field_descs = { "wip_warning_threshold"     => "Warning Threshold",
+                                "wip_overload_threshold"    => "Overload Threshold",
                                 "namedquery_name"           => "Saved Search",
                                 "color"                     => "Color",
+                                "blocked_bugs_handling"     => "Blocked " _ terms.Bugs _ " handling",
                               }%]
   [% vars.field_descs.import( additional_field_descs ) %]
   

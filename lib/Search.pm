@@ -19,26 +19,35 @@
 # Contributor(s):
 #   Marco Pauls <info@mgp-it.de>
 
+
 package Bugzilla::Extension::PAMBAAN::Search;
 use strict;
 use base qw(Bugzilla::Search Exporter);
+
+use Data::Dumper;
 
 
 sub _standard_where {
     my ($self) = @_;
     my @where = ( 'bugs.creation_ts IS NOT NULL' );
     
+    my $security_term = "security_map.group_id IS NULL";
     my $user = $self->_user;
     if ($user->id) {
         my $userid = $user->id;
-        my $security_term = "( bugs.assigned_to = $userid )";
+        $security_term .= " OR bugs.assigned_to = $userid";
+        
+        $security_term = " ( $security_term ) ";
 
         push(@where, $security_term);
+
+        push(@where, "( bugs.assigned_to = $userid )") if $self->{personal};
     }
+    
+
 
     return @where;
 }
-
 
 sub _standard_joins {
     my ($self) = @_;
@@ -56,7 +65,42 @@ sub _standard_joins {
             ["NOT (" . $user->groups_in_sql('security_map.group_id') . ")"];
     }
     
+    my %fields = map{ $_ => 1 } @{$self->{fields}};
+
+    if ( $fields{dependantslist} ) {
+        my $dependencies_join = {
+            table => '(SELECT blocked, group_concat(dependson) AS dependantslist FROM dependencies GROUP BY blocked )',
+            as    => 'dependency_map',
+            from  => 'bug_id',
+            to    => 'blocked',
+        };
+        
+        push(@joins, $dependencies_join);
+    }
+    
+    if ( $fields{blockinglist} ) {
+        my $blockers_join = {
+            table => '(SELECT dependson, group_concat(blocked) AS blockinglist FROM dependencies GROUP BY dependson )',
+            as    => 'blocking_map',
+            from  => 'bug_id',
+            to    => 'dependson',
+        };
+        
+        push(@joins, $blockers_join);
+    }
+    
     return @joins;
+}
+
+sub COLUMNS {
+    my $self = shift;
+    my $columns = $self->SUPER::COLUMNS();
+    
+    $columns->{dependantslist} = { name => 'dependency_map.dependantslist', title => 'Dependants List' };
+    $columns->{blockinglist}   = { name => 'blocking_map.blockinglist',     title => 'Blocking List' };
+    $columns->{blocked}        = { name => 'CASE WHEN blockinglist IS NULL THEN 0 ELSE 1 END', title => 'Blocked' };
+        
+    return $columns;
 }
 
 
@@ -87,12 +131,35 @@ C<_standard_joins>
 
 methods of L<Bugzilla::Search>.
 
-For the Pambaan board we only want to have the bugs which are assigned to the current user
-or she/he can access due to group membership. We do not want to have the bugs where the current user is the 
-reporter or member of the cc. We could have tweaked C<_standard_where> only but by adapting C<_standard_joins>
-we get rid of one JOIN with the C<cc> table.
+=head1 METHODS
 
-The C<_standard_where> also includes the QA contact if Bugzilla is configured to C<useqacontact>. The
-current implementation also ommits the QA contact.
+=head2 PRIVAT METHODS
+
+=head3 _standard_joins
+
+Modified C<_standard_joins> for Pambaan. 
+
+We do not want to have the bugs for which the current user is the reporter, QA contact
+or on the bug's CC list. These bugs do not contribute to the workload. So do not C<JOIN> with the C<cc> table.
+
+If the L<Bugzilla::Extension::PAMBAAN::Board> is configured to factor dependencies we need to know for each bug if
+
+=over
+
+=item
+the bug depends on one or several other bugs
+
+=item
+the bug blocks another bug
+
+=back
+
+So C<JOIN> with the dependencies table for getting the list of dependent bugs and C<JOIN> with the
+dependencides table for getting the list of blocked bugs.
+
+=head3 _standard_where
+
+We do not want to have the bugs for which the current user is the reporter, QA contact
+or on the bug's CC list. So do not check for reporter an cc.
 
 =cut

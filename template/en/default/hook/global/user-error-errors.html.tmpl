@@ -26,16 +26,16 @@
         The name of a board is limited to [% namelimit %] characters. '[% name FILTER html %]' is too long ([% name.length %] characters).
 
     [% ELSIF error == "pambaan_board_name_already_in_use" %]
-        [% title = "Board name already exists" %]
-        The product name '[% board FILTER html %]' already exists.
+        [% title = terms.Board _ "Board name already exists" %]
+        The [% terms.Board %] named '[% board FILTER html %]' already exists.
 
     [% ELSIF error == "pambaan_board_name_diff_in_case" %]
-        [% title = "Board name differs only in case" %]
-        The product name '[% board FILTER html %]' differs from existing 
-        product '[% existing_board FILTER html %]' only in case.
+        [% title = terms.Board _ " name differs only in case" %]
+        The [% terms.Board %] name '[% board FILTER html %]' differs from existing 
+        [% terms.Board %] '[% existing_board FILTER html %]' only in case.
         
     [% ELSIF    error == "pambaan_board_blank_description" %]
-        [% title = "Blank Board Description not allowed" %]
+        [% title = "Blank " _ terms.Board _ " description not allowed" %]
         You must enter a description for the board!          
 
 
@@ -44,7 +44,7 @@
 
     [% ELSIF    error == "pambaan_lane_blank_name" %]
         [% title = "Blank " _ terms.Lane _ "Name not allowed" %]
-        You must enter a name for the lane!
+        You must enter a name for the [% terms.lane %]!
 
     [% ELSIF    error == "pambaan_lane_must_be_numeric" %]
         [% title = "No Number!" %]
@@ -55,4 +55,20 @@
         The value for &laquo;[% field_descs.$field FILTER html %]&raquo; must be a positive number. Got [% value FILTER html %]
 
 
-    [% END %].
+    [% ELSIF    error == "pambaan_invalid_field_value" %]
+        [% title = "Invalid Value!" %]
+        The value [% value FILTER html %] is not allowed for &laquo;[% field_descs.$field FILTER html %]&raquo;.
+        [% IF allowedvalues %]
+            <div style="margin-top: 1rem; font-size: 75%">You must choose one of<ul>
+                [% FOREACH val IN allowedvalues %]
+                <li>[% val %]</li>
+                [% END %]
+            </ul>
+            [% IF allowempty %]or leave the field empty.[% END %]
+            </div>
+        [% END %]
+
+
+
+
+    [% END %]

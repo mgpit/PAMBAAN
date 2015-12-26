@@ -30,10 +30,14 @@
 %]
 
     <h2>[% terms.Boards %]</h2>
+    [% IF user.in_group( 'admin' ) %]
+    <form id="editboard" method="post" action="[% urlbase FILTER html IF full_url %][% 'page.cgi?id=pambaan/boards.html&action=deleteboard' FILTER url %]">
+    <input type="hidden" name="token"       value="[% token FILTER html %]">
+    [% END %]    
     <table id="admin_table" class="pambaan_styled_table">
         <thead>
             <tr>
-                <th>Name</th><th>Description</th><th>[% terms.Lanes %]</th><th>&nbsp;</th>
+                <th>Name</th><th>Description</th><th>Assignee Restriction</th><th>[% terms.Lanes %]</th><th>&nbsp;</th>
             </tr>
         </thead>
         
@@ -48,6 +52,7 @@
     </table>
     
     [% IF user.in_group( 'admin' ) %]
+    </form>
         [% addlink = 'page.cgi?id=pambaan/editboard.html&action=newboard' FILTER url %]
         <p><a href="[% urlbase FILTER html IF full_url %][% addlink %]">&oplus;&nbsp;Add&nbsp;Board</a></p>
     [% END %]        
@@ -60,12 +65,22 @@
         [% ELSE %]
         <td [% 'class="defaultboard"' IF board.defaultBoard %]>[% board.name %]</td>
         [% END %]
-        
-        <td>[% board.description %]</td><td>[% board.number_of_lanes %]</td>
-        
+        <td>[% board.description %]</td>
+        <td>[% SWITCH board.restrict_to_assignee_currusr %]
+            [% CASE 'Y' %]Yes
+            [% CASE 'N' %]No
+            [% CASE %]Undefined
+            [% END %]
+        </td>
+        <td>[% board.number_of_lanes %]</td>
+
         [% IF user.in_group( 'admin' ) %]
-        [% deletelink = 'page.cgi?id=pambaan/boards.html&action=deleteboard&board_id=' _ board.id FILTER url %]
-        <td><a href="[% urlbase FILTER html IF full_url %][% deletelink %]"><img src="[% urlbase FILTER html IF full_url %]extensions/PAMBAAN/web/images/muell2.png">Delete</a></td>
+        <td>
+            <button type="submit" name="board_id" value="[% board.id %]" 
+                    onclick="return confirm( 'Are you sure you want to delete [% terms.board %] [%+ board.name %]?');">
+            <img src="[% urlbase FILTER html IF full_url %]extensions/PAMBAAN/web/images/muell2.png">Delete
+            </button>
+        </td>
         [% ELSE %]
         <td>&nbsp;</td><td>&nbsp;</td>
         [% END %]

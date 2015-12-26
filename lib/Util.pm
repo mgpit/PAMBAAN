@@ -46,3 +46,11 @@ sub allowed_for_pambaan {
 # @EXPORT.)
 
 1;
+
+
+=head1 NAME
+
+Bugzilla::Extension::PAMBAAN::Util.
+
+Utility package - as defined by the C<Bugzilla::Extension> specification
+=cut

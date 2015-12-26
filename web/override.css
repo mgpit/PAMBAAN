@@ -9,6 +9,14 @@
     box-sizing: border-box;
 }
 
+
+.example {
+    display: flex;
+    transition: all .5s;
+    user-select: none;
+    background: linear-gradient(to bottom, white, black);
+}
+
 html, body { 
     margin: 0;
     padding: 0;
@@ -69,4 +77,8 @@ body {
     background-color: LightGray;
     padding: 2px 4px 2px 4px;
     min-height: 3em;
+}
+
+#header {
+    min-height: 3rem;
 }

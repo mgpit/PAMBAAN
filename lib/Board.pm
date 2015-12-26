@@ -26,8 +26,7 @@ use strict;
 
 use base qw(Bugzilla::Object Exporter);
 our @EXPORT = qw();   
-our $version="0.4.1";
-use constant NAME=>'PAMBAAN';
+our $version="0.6.0";
 
 use Data::Dumper;
 use Scalar::Util qw( blessed );
@@ -41,13 +40,22 @@ use Bugzilla::Extension::PAMBAAN::Lane;
 
 use constant DB_TABLE => 'pambaan_boards';
 
-use constant DEFAULTBOARD => {
+use constant DEFAULTBOARD => bless( {
     name => "Default", 
     description => "Default Board",
-    defaultBoard => 1,
-};
+    defaultBoard => 1, 
+    blocked_bugs_handling => 'DISPLAY',
+    restrict_to_assignee_currusr => 'N',
+}, 'Bugzilla::Extension::PAMBAAN::Board' );
 
-use constant VALID_COLUMNS => qw( id name description defaultBoard );
+use constant NEWTEMPLATE => bless( {
+    name => "New Board",
+    defaultBoard => 0,    
+    blocked_bugs_handling => 'DISPLAY',
+    restrict_to_assignee_currusr => 'N',
+}, 'Bugzilla::Extension::PAMBAAN::Board' );
+
+use constant VALID_COLUMNS => qw( id name description defaultBoard blocked_bugs_handling restrict_to_assignee_currusr );
 
 sub DB_COLUMNS {
     my $t = DB_TABLE;
@@ -61,19 +69,23 @@ use constant NUMERIC_COLUMNS => (
     'defaultBoard',
 );
 
-use constant UPDATE_COLUMNS => (
-    'name',
-    'description',
-    'defaultBoard',
+use constant UPDATE_COLUMNS => qw(
+    name
+    description
+    defaultBoard
+    blocked_bugs_handling
+    restrict_to_assignee_currusr
 );
 
 use constant NAME_FIELD => 'name';
 use constant ID_FIELD   => 'id';
 use constant LIST_ORDER => 'id';
 use constant VALIDATORS =>  {
-                                defaultBoard    => \&Bugzilla::Object::check_boolean,
-                                name            => \&_check_name,
-                                description    => \&_check_description,
+                                defaultBoard                    => \&Bugzilla::Object::check_boolean,
+                                name                            => \&_check_name,
+                                description                     => \&_check_description,
+                                blocked_bugs_handling           => \&_check_blocked_bugs_handling,
+                                restrict_to_assignee_currusr    => \&_check_yes_no,
                             };
 
 use constant PAMBAAN_MAX_BOARD_SIZE => 127;
@@ -242,46 +254,22 @@ sub defaultBoard {
     return $self->{defaultBoard};  
 }
 
-# For set_all
-sub set_name{
-    $_[0]->set('name', $_[1]);
-}
-# For set_all
-sub set_description{
-    $_[0]->set('description', $_[1]);
-}
-# For set_all
-sub set_defaultBoard{
-    $_[0]->set('defaultBoard', $_[1]);
+sub blocked_bugs_handling {
+    my ( $self, $blocked_bugs_handling ) = @_;
+    $self->set( 'blocked_bugs_handling', $blocked_bugs_handling ) if defined $blocked_bugs_handling;
+    return $self->{blocked_bugs_handling};
 }
 
-
-sub has_lanes {
-    my $self = shift;
-    return ( $self->number_of_lanes > 0 );
-}
-
-sub number_of_lanes {
-    my $self = shift;
-    return scalar @{$self->lanes()};
+sub restrict_to_assignee_currusr {
+    my ( $self, $restrict_to_assignee_currusr ) = @_;
+    $self->set( 'restrict_to_assignee_currusr', $restrict_to_assignee_currusr ) if defined $restrict_to_assignee_currusr;
+    return $self->{restrict_to_assignee_currusr};
 }
 
 sub lanes {
     my $self = shift;
     $self->{lanes} = $self->{lanes} || [];   
     return $self->{lanes};
-}
-
-
-
-sub has_groups {
-    my $self = shift;
-    return ( $self->number_of_groups > 0 );
-}
-
-sub number_of_groups {
-    my $self = shift;
-    return scalar @{$self->groups()};
 }
 
 sub groups {
@@ -307,6 +295,14 @@ EOSQL
     $self->{groups} = Bugzilla::Group->new_from_list($group_ids);
     return wantarray ? ( $self->{groups}, $self->{group_ids} ) : $self->{groups};
 }
+
+
+#
+#                                                                         ______________________________ 
+#                                                                        /                              \
+# ---------------------------------------------------------------------- | State Methods                 |
+#                                                                        \______________________________/
+#
 
 sub update_groups {
     my ( $self, $delta ) = @_;
@@ -335,6 +331,60 @@ sub update_groups {
     # a new call to $self->groups must rebuild the list from the database.
     delete $self->{groups};
 }
+
+
+sub has_groups {
+    my $self = shift;
+    return ( $self->number_of_groups > 0 );
+}
+
+sub number_of_groups {
+    my $self = shift;
+    return scalar @{$self->groups()};
+}
+
+
+sub fetch_lanes {
+    my $self = shift;
+    $self->_add_lanes;
+}
+
+sub has_lanes {
+    my $self = shift;
+    return ( $self->number_of_lanes > 0 );
+}
+
+sub number_of_lanes {
+    my $self = shift;
+    return scalar @{$self->lanes()};
+}
+
+
+sub wants_blocked_bugs_hidden {
+    my $self = shift;
+    return $self->blocked_bugs_handling eq 'HIDE';
+}
+
+sub wants_blocked_bugs_noncontributing {
+    my $self = shift;
+    return $self->blocked_bugs_handling eq 'NONCONTRIBUTING';
+}
+
+sub wants_all_matching_bugs {
+    my $self = shift;
+    my $bug_handling = $self->blocked_bugs_handling;
+    return $bug_handling eq 'DISPLAY' ||  $bug_handling eq 'NONCONTRIBUTING';
+}
+
+sub is_global {
+    my $self=shift;
+    return ($self->restrict_to_assignee_currusr eq 'N')?1:0;
+}
+sub is_personal {
+    my $self=shift;
+    return ($self->restrict_to_assignee_currusr eq 'Y')?1:0;
+}
+
 
 #
 #                                                                         ______________________________ 
@@ -374,13 +424,30 @@ sub _check_description {
     return $description;
 }
 
+sub _check_blocked_bugs_handling {
+    my ($invocant, $blocked_bugs_handling, $field ) = @_;
+    my %valid = ( 'HIDE'=>1, 'NONCONTRIBUTING'=>1, 'DISPLAY'=>1 );
+    
+    $blocked_bugs_handling = trim( $blocked_bugs_handling );
+    return $blocked_bugs_handling if ( $valid{$blocked_bugs_handling} );
+
+    ThrowUserError('pambaan_invalid_field_value', {'field' => $field, 'value' => $blocked_bugs_handling, 'allowedvalues' => [ keys(%valid) ], 'allowempty' => 0} );
+}
+
+sub _check_yes_no {
+    my ($invocant, $yes_no, $field ) = @_;
+    $yes_no = uc( $yes_no ) || 'N'; # interpret undefined as (N)o ... don't want to throw error on null values
+
+    return $yes_no if ( $yes_no =~ /Y|N/ );
+    ThrowUserError('pambaan_invalid_field_value', {'field' => $field, 'value' => $yes_no, 'allowedvalues' => [ 'Y', 'N' ], 'allowempty' => 1} );
+}
+
 #
 #                                                                         ______________________________ 
 #                                                                        /                              \
 # ---------------------------------------------------------------------- | Modifiers                     |
 #                                                                        \______________________________/
 #
-
 
 sub _add_lanes {
     my $self = shift;

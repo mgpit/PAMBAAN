@@ -27,23 +27,39 @@
     title = title
 %]
 
+[%# PROCESS bug/time.html.tmpl %]
+
 <!-- -------------------- This is pambaanboard.html ------------------------------ -->
         
             <div id="pambaanboard_header">
-                <form method="GET" action="[% urlbase FILTER html IF full_url %]page.cgi">
+
+                <form id="board_selection_form" method="GET" action="[% urlbase FILTER html IF full_url %]page.cgi">
                 <input type="hidden" name="id" value="pambaan/pambaanboard.html"/>
                 <label for="pambann_board_selector">You are currently viewing [% terms.Board %]</label>
-                [% IF all_pambaan_boards.size > 1 %]
-                    <select id="pambaan_board_selector" name="current_board_id">
+                [% number_of_boards_available = 0 %]
+                [% number_of_boards_available = number_of_boards_available + (all_pambaan_boards.global.size   || 0) %]
+                [% number_of_boards_available = number_of_boards_available + (all_pambaan_boards.personal.size || 0) %]
+                [% IF number_of_boards_available > 1 %]
+                    <select id="pambaan_board_selector" name="current_board_id" onchange="this.form.action.click()">
+                        [% IF all_pambaan_boards.global.size > 0 %]
                         <optgroup label="Global Boards" class="pambaan_global">
-                            [% FOREACH b IN all_pambaan_boards %]
+                            [% FOREACH b IN all_pambaan_boards.global %]
                             <option value="[% b.id %]" [% 'selected' IF b.id == current_pambaan_board.id %]>[% b.name %]</option>
                             [% END %]
                         </optgroup>
+                        [% END %]
+                        [% IF all_pambaan_boards.personal.size > 0 %]
+                        <optgroup label="Personal Boards" class="pambaan_personal">
+                            [% FOREACH b IN all_pambaan_boards.personal %]
+                            <option value="[% b.id %]" [% 'selected' IF b.id == current_pambaan_board.id %]>[% b.name %]</option>
+                            [% END %]
+                        </optgroup>
+                        [% END %]
                     </select> 
                     <button type="submit" name="action" value="changeboard"><img src="./extensions/PAMBAAN/web/images/refresh.png"></button>
                 [% ELSE %]
-                    <input id="pambaan_board_selector" type="text" class="pambaan_global" value="[% current_pambaan_board.name %]" readonly />
+                    <input id="pambaan_board_selector" type="text" class="[% current_pambaan_board.is_global ? 'pambaan_global' : 'pambaan_personal' -%]" 
+                    value="[% current_pambaan_board.name %]" readonly />
                 [% END %]
                 </form>
             </div>
@@ -61,49 +77,38 @@
 
 [% BLOCK a_lane %]
             <div id="lane[% loop.count %]" class="pambaanboard_lane withbugcount [%+ 'pambaan_grow_' _ lane.space_occupied_text IF lane.space_occupied %]">
+            [% IF lane.is_personal %]
+                <span class="bugcount" title="This [% terms.lane %] is restricted to [% terms.bugs %] which are assigned to me.">
+                <img alt="filter" src="[% urlbase FILTER html IF full_url %]extensions/PAMBAAN/web/images/person.png"/></span>[% END %]
+            [% IF lane.bugs_hidden %]
+                <span class="bugcount" title="[% lane.bugs_hidden %] blocked [%+ lane.bugs_hidden==1 ? terms.bug : terms.bugs %] hidden.">
+                <img alt="filter" src="[% urlbase FILTER html IF full_url %]extensions/PAMBAAN/web/images/filter2.png"/></span>[% END %]
         [% IF lane.has_bugs %]
-            
+
             [% IF lane.is_warning  %]
                 <span class="bugcount" title="You should not have more than [% lane.wip_warning_threshold %] [%+ terms.bugs %] in this [% terms.lane %]">
-                <img src="[% urlbase FILTER html IF full_url %]extensions/PAMBAAN/web/images/attention.png"/></span>[% END %]
+                <img alt="warn" src="[% urlbase FILTER html IF full_url %]extensions/PAMBAAN/web/images/attention.png"/></span>[% END %]
             [% IF lane.is_overload %]
                 <span class="bugcount" title="You must not have more than [% lane.wip_overlaod_threshold %] [%+ terms.bugs %] in this [% terms.lane %]">
-                <img src="[% urlbase FILTER html IF full_url %]extensions/PAMBAAN/web/images/stop.png"/></span>[% END %]
-            <span class="bugcount">[% lane.bugcount %]</span>
+                <img alt="stop" src="[% urlbase FILTER html IF full_url %]extensions/PAMBAAN/web/images/stop.png"/></span>[% END %]
+           <span class="bugcount">[% lane.bugcount %]</span>
         [% END %]
-
-                    <div class="pb_laneheader [% PROCESS a_color %] title='This is "[% lane.name %]" populated by "[% lane.namedquery_name %]"'>
+                    [% lanetitle='This is "' _ lane.name _ '" populated by "' _ lane.namedquery_name _ '".' %]
+                    <div class="pb_laneheader [% PROCESS a_color %] title='[% lanetitle %]'>
                         <div class="pb_lanebuttons">&ominus;</div>
                         <h2>[% lane.name %]</h2>
                     </div>
                     <ul class="pb_lanecontent">
-                        [% bugs = lane.bugs %]
-                        [% FOREACH lanebug IN bugs %]
-                            [% PROCESS a_bug %]               
-                        [% END %] 
+                      [% bugs = lane.bugs %]
+                      [% FOREACH lanebug IN bugs %]
+                        [%+ PROCESS pambaan/card.html.tmpl bug=lanebug lanedef=lane +%]
+                      [% END %] 
                     </ul> 
             </div>
 
 
 [% END %]
 
-
-[% BLOCK a_bug %]
-                <li class="[% lanebug.bug_status | replace('\s+', '_') %]">
-                    <div class="pb_cardfirst">
-                        <span class="pb_bugid"><a href="[% urlbase FILTER html IF full_url %]show_bug.cgi?id=[% lanebug.bug_id FILTER uri %]">[% lanebug.bug_id %]</a></span>
-                        <span><strong>[% lanebug.product %]</strong><br/>&roarr;&nbsp;[% lanebug.component %]</strong></span>
-                    </div>
-                    <div class="pb_cardother" title="[% lanebug.short_desc %]">[% lanebug.short_desc %]</div>
-                    <div class="pb_cardother" title="Importance: [% lanebug.priority %] | [% lanebug.bug_severity %]">
-                        Importance: <span class="[% lanebug.priority %]">[% lanebug.priority %]</span> | <span class="[% lanebug.bug_severity %]">[% lanebug.bug_severity %]</span>
-                    </div>
-                    <div class="pb_cardother right"><strong>[%lanebug.bug_status %]</strong></div>
-                    <div class="pb_cardother"><strong>Assignee:</strong> [% lanebug.assigned_to_realname %]</div>
-                </li>
-                
-                
-[% END %]
 
 [% BLOCK a_color -%]
     [% colordef = lane.color_type %]

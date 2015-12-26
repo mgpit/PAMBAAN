@@ -71,3 +71,11 @@ sub ddl {
 1;
 
 __END__
+
+
+=head1 NAME
+
+Bugzilla::Extension::PAMBAAN::Schema::Tables::BoardsGroupMap.
+
+The Schema definitions for the C<pambaan_boards_group_map> table.
+=cut

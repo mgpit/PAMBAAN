@@ -18,7 +18,7 @@
   # Contributor(s): 
   #     Marco Pauls <info@mgp-it-de>
   #%]
-
+  
     <hr/>
 
     [% UNLESS editmode %]
@@ -38,12 +38,18 @@
     [% END %]
     
     [% BLOCK board_lanes %]
+        [% IF editmode AND user.in_group( 'admin' ) %]
+        <form id="editlane" method="post" action="[% urlbase FILTER html IF full_url %][% 'page.cgi?id=pambaan/lanes.html&action=deletelane' FILTER url %]">
+        <input type="hidden" name="board_id"    value="[% pambaan_board.id %]">
+        <input type="hidden" name="token"       value="[% token FILTER html %]">
+        [% END %]
         <table class="pambaan_styled_table">
             <thead>
                 <tr>
                     <th>ID</th><th>Name</th>
                     <th>Description</th>
                     <th>Populated by Query</th>
+                    <th>Assignee Restriction</th>
                     <th>Warning threshold</th>
                     <th>Overload threshold</th>
                     <th>Space occupied</th>
@@ -58,6 +64,10 @@
         [% END %]
             </tbody>
         </table>
+        
+        [% IF editmode AND user.in_group( 'admin' ) %]
+        </form>
+        [% END %]
     [% END %]  
   
     [% BLOCK a_lane %]
@@ -70,20 +80,29 @@
         [% END %]                
                         </td><td>[% lane.description %]</td>
                         <td>[% lane.namedquery_name %]</td>
+                        <td>[% SWITCH lane.restrict_to_assignee_currusr %]
+                            [% CASE 'Y' %]Yes
+                            [% CASE 'N' %]No
+                            [% CASE %]Inherit
+                            [% END %]
+                        </td>
                         <td>[% lane.wip_warning_threshold  IF lane.wip_warning_threshold %]</td>
                         <td>[% lane.wip_overload_threshold IF lane.wip_overload_threshold %]</td>
                         <td>[% lane.space_occupied_text %]</td>
                         [% PROCESS a_color -%]
 
                         <td>[% lane.sortkey %]</td>
-        [% IF editmode %]    
-            [% IF user.in_group( 'admin' ) %]
- 
-            [% deletelink = 'page.cgi?id=pambaan/lanes.html&action=deletelane&board_id=' _ pambaan_board.id _'&lane_id=' _ lane.id FILTER url %]
-                        <td><a href="[% urlbase FILTER html IF full_url %][% deletelink %]"><img src="[% urlbase FILTER html IF full_url %]extensions/PAMBAAN/web/images/muell2.png">Delete</a></td>
-            [% ELSE %]
-                        <td>&nbsp;</td><td>&nbsp;</td>
+        [% IF editmode %]
+            <td>
+            [% IF user.in_group( 'admin' ) -%]
+                <button type="submit" name="lane_id" value="[% lane.id %]"
+                        onclick="return confirm( 'Are you sure you want to delete [% terms.lane %] [%+ lane.name %]?');">
+                <img src="[% urlbase FILTER html IF full_url %]extensions/PAMBAAN/web/images/muell2.png">Delete
+                </button>
+            [% ELSE -%]
+            &nbsp;
             [% END %]
+            </td>
         [% END %]
                     </tr> 
     [% END%]

@@ -60,6 +60,7 @@
     [% BLOCK edit_groups %]
         <form id="editboardgroups" method="post" action="[% urlbase FILTER html IF full_url %][% 'page.cgi?id=pambaan/groups.html' FILTER url %]">
             <input type="hidden" name="board_id" value="[% pambaan_board.id %]"/>
+             <input type="hidden" name="token" value="[% token FILTER html %]">
             <table>
                 <tr>
                     <th>Groups available</th>

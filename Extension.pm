@@ -25,7 +25,6 @@ use strict;
 use base qw(Bugzilla::Extension Exporter);
 our @EXPORT = qw();  
 our $version="0.4.1";
-use constant NAME => 'PAMBAAN';
 
 use Bugzilla;
 use Bugzilla::Error;
@@ -58,6 +57,60 @@ use constant PAGE_HANDLERS => {
     'pambaan/editlane.html'     => \&_do_admin_editlane,
     'pambaan/groups.html'       => \&_do_admin_editgroups,
 };
+
+BEGIN {
+   *Bugzilla::Bug::has_blockers     = \&_bug_has_blockers;
+   *Bugzilla::Bug::has_no_blockers  = \&_bug_has_no_blockers;
+   *Bugzilla::Bug::is_blocker       = \&_bug_is_blocker;
+   *Bugzilla::Bug::is_no_blocker    = \&_bug_is_no_blocker;
+   *Bugzilla::Bug::current_estimate = \&_bug_current_estimate;
+   *Bugzilla::Bug::gain             = \&_bug_gain;
+   *Bugzilla::Bug::velocity         = \&_bug_velocity;
+}
+
+sub _bug_has_blockers {
+    my $self = shift;
+    return ($self->{dependantslist})?1:0;
+}
+
+sub _bug_has_no_blockers {
+    my $self = shift;
+    return not $self->has_blockers;
+}
+
+sub _bug_is_blocker {
+    my $self = shift;
+    return ($self->{blockinglist})?1:0;
+}
+
+sub _bug_is_no_blocker {
+    my $self = shift;
+    return not $self->is_blocker;
+}
+
+sub _bug_current_estimate {
+    my $self = shift;
+    return $self->actual_time+$self->remaining_time;
+}
+
+sub _bug_gain {
+    my $self = shift;
+    return $self->estimated_time - $self->current_estimate;
+}
+
+sub _bug_velocity {
+    my $self = shift;
+    my $velocity = undef;
+
+    my $estimated_time = $self->estimated_time || 0;
+    if ( $estimated_time > 0 ) {
+        my $percentage = ( $self->current_estimate / $self->estimated_time ) * 100;
+        $velocity = ( $percentage > 0 )?int($percentage + $percentage/abs($percentage*2)):undef;
+    }
+    
+    return $velocity;
+}
+
 
 
 #
@@ -113,9 +166,22 @@ sub _do_display_pambaanboard {
     # or the previous board is not accessible any more ...
     $board = ${boards}[0] unless defined $board;
 
-    my @board_names_and_ids = map{ {"id"=>$_->id(), "name"=>$_->name()} } @boards;
+    my @global_boards;
+    my @personal_boards;
+    foreach my $board ( @boards ) {
+        my $boardshort = {"id"=>$board->id(), "name"=>$board->name()};
+        if ($board->is_global) {
+            push @global_boards, $boardshort;
+        } else {
+            push @personal_boards, $boardshort;
+        }
+    }
+    my $pambaan_boards;
+    $pambaan_boards->{global} = \@global_boards if scalar @global_boards;
+    $pambaan_boards->{personal} = \@personal_boards if scalar @personal_boards;
     
-    $vars->{all_pambaan_boards} = \@board_names_and_ids;
+    
+    $vars->{all_pambaan_boards} = $pambaan_boards;
     $vars->{current_pambaan_board} = $board;
     
     my %cookieargs = ('-expires' => 'Fri, 01-Jan-2038 00:00:00 GMT' );
@@ -148,25 +214,39 @@ sub _capture_board {
 
     my ($self, $board, $vars) = @_;
     
-    foreach my $field ( qw( name description defaultBoard ) ) {
-        my $value = $vars->{$field};
-        $value = ($field eq 'defaultBoard')?0:'' if not defined $value;
+    foreach my $field ( qw( name description blocked_bugs_handling restrict_to_assignee_currusr ) ) {
+        my $value = $vars->{$field} || ''; # reset if form field blank
         trick_taint( $value );
         $board->$field( $value );
     }
+
+   foreach my $field ( qw( defaultBoard ) ) {
+        my $fieldvalue = $vars->{$field} || 0; # reset if form field blank
+        my $value = $fieldvalue?1:0;
+        # trick_taint( $value );
+        $board->$field( $value );
+    }
+    
+
     return $board;
 }
 
 sub _capture_lane {
     my ($self, $lane, $vars) = @_;
-    foreach my $formfield ( qw( lane_name lane_description lane_color lane_sortkey lane_board_id lane_wip_warning_threshold lane_wip_overload_threshold lane_space_occupied ) ) {
-        my $value = $vars->{$formfield} || '';
-        ( my $field = $formfield ) =~ s/^lane_(\w+)/$1/;
+    
+    foreach my $field ( qw( name description color sortkey board_id wip_warning_threshold wip_overload_threshold space_occupied restrict_to_assignee_currusr ) ) {
+        my $value = $vars->{"lane_$field"} || ''; # reset if form field blank
         trick_taint( $value );
         $lane->$field( $value );
     }
-    foreach my $formfield ( qw( lane_namedquery_name_and_sharer_id ) ) {
-        my $value = $vars->{$formfield};
+    foreach my $field ( qw( card_show_asignee card_show_importance card_show_product card_show_bug_status card_show_timetracking  ) ) {
+        my $fieldvalue = $vars->{"lane_$field"} || 0; # reset if form field blank
+        my $value = $fieldvalue?1:0;
+        # trick_taint( $value );
+        $lane->$field( $value );
+    }
+    foreach my $field ( qw( namedquery_name_and_sharer_id ) ) {
+        my $value = $vars->{"lane_$field"};
         if ( $value ) {
             trick_taint( $value );
             my ($namedquery_name, $namedquery_sharer_id) = eval( $value );
@@ -219,7 +299,10 @@ sub _do_admin_editlane {
                                                 $vars->{token} = issue_session_token( 'editlane' );
                                                 last SWITCH;                                 
                                              };
-            ($action eq 'newlane')     && do { $lane = transientnew Bugzilla::Extension::PAMBAAN::Lane( { name => "New Lane", sortkey => 10, board_id => $board_id } );
+            ($action eq 'newlane')     && do { $board->fetch_lanes;
+                                               $lane = Bugzilla::Extension::PAMBAAN::Lane->NEWTEMPLATE;
+                                               $lane->board_id( $board->id );
+                                               $lane->sortkey( (($board->number_of_lanes)+1)*10 );
                                                $vars->{token} = issue_session_token( 'newlane' );
                                                last SWITCH;
                                              };                                            
@@ -243,16 +326,15 @@ sub _do_admin_listlanes {
     if ( $action && $action ne 'lanes' ) {
         SWITCH: {
             ( (    $action eq 'deletelane') 
-                && $board_id && $lane_id    ) &&   do {     ### check_token_data( $token, 'deletelane' );
+                && $board_id && $lane_id    ) &&   do {     check_token_data( $token, 'deletelane' );
                                                             my $lane = new Bugzilla::Extension::PAMBAAN::Lane( $lane_id );
                                                             $lane->remove_from_db;
-                                                            ### delete_token( $token );
+                                                            delete_token( $token );
                                                             last SWITCH; 
                                                       };
             ( (    $action eq 'updatelane') 
                 && $board_id && $lane_id    ) &&   do {     check_token_data( $token, 'editlane' );
                                                             my $lane = new Bugzilla::Extension::PAMBAAN::Lane( $lane_id );
-                                                            # Won't use set_all() ... 
                                                             my $old = $lane;
                                                             if ( $lane ) {
                                                                 $self->_capture_lane( $lane, $cgi_vars );
@@ -284,6 +366,7 @@ sub _do_admin_listlanes {
     
     my $board = new Bugzilla::Extension::PAMBAAN::Board( {id=>$board_id, with_lanes=>1} );
     $vars->{pambaan_board} = $board;
+    $vars->{token} = issue_session_token( 'deletelane' );
                                                               
 }
 
@@ -317,17 +400,16 @@ sub _do_admin_editgroups {
     my $cgi_vars = $cgi->Vars;
 
     my $board = new Bugzilla::Extension::PAMBAAN::Board( {id=>$board_id, with_lanes=>1} );
-
+    
     if ( $action && $action eq 'updategroups' ) {
-
-        # Some fuzz with mulitselect values ...
-        my $selected_for_adding   = $self->__multiselect_field( $cgi_vars->{pambaan_board_groups_available} );
-        my $selected_for_removing = $self->__multiselect_field( $cgi_vars->{pambaan_board_groups_assigned}  );
-        
-        $board->update_groups( {'add' => $selected_for_adding, 'remove' => $selected_for_removing } );
-
-    }                                              
-
+            check_token_data( $token, 'updategroups' );
+            # Some fuzz with mulitselect values ...
+            my $selected_for_adding   = $self->__multiselect_field( $cgi_vars->{pambaan_board_groups_available} );
+            my $selected_for_removing = $self->__multiselect_field( $cgi_vars->{pambaan_board_groups_assigned}  );
+            
+            $board->update_groups( {'add' => $selected_for_adding, 'remove' => $selected_for_removing } );
+            delete_token( $token );
+    }
     my ( $groups_assigned, $groups_assigned_ids ) = $board->groups;
     push @$groups_assigned_ids, -1; # if no groups are assigned than the in clause would be: IN ( ) 
 
@@ -347,6 +429,8 @@ EOSQL
     $vars->{groups_assigned} = $groups_assigned || [];
     $vars->{groups_not_assigned} = $groups_not_assigned || [];
     $vars->{pambaan_board} = $board;
+    $vars->{token} = issue_session_token( 'updategroups' );
+
 }
 
 
@@ -374,13 +458,12 @@ sub _do_admin_editboard {
                                                 $vars->{token} = issue_session_token( 'editboard' );
                                                 last SWITCH;                                 
                                               };
-            ($action eq 'newboard')     && do { $board = transientnew Bugzilla::Extension::PAMBAAN::Board( "New Board" );
+            ($action eq 'newboard')     && do { $board = Bugzilla::Extension::PAMBAAN::Board->NEWTEMPLATE;
                                                 $vars->{pambaan_board} = $board;
                                                 #
                                                 # Create a dummy lane for quick editing the board's fist lane ...
-                                                my $lane = transientnew Bugzilla::Extension::PAMBAAN::Lane( { name => "First Lane", 
-                                                                                                           description => "This will be the board's first lane", 
-                                                                                                           sortkey => 10, } );
+                                                my $lane = Bugzilla::Extension::PAMBAAN::Lane->NEWTEMPLATE;
+                                                $lane->description( "This will be the board's first lane" );
                                                 $vars->{pambaan_lane} = $lane;
                                                 $vars->{pambaan_shared_searches} = $self->_do_pambaan_shared_searches;
                                                 $vars->{token} = issue_session_token( 'newboard' );
@@ -405,10 +488,10 @@ sub _do_admin_listboards{
     if ( $action ) {
         SWITCH: {
             ( (    $action eq 'deleteboard') 
-                && $board_id                 ) &&   do {    ### check_token_data( $token, 'deleteboard' );
+                && $board_id                 ) &&   do {    check_token_data( $token, 'deleteboard' );
                                                             my $board = new Bugzilla::Extension::PAMBAAN::Board( {id=>$board_id} );
                                                             $board->remove_from_db;
-                                                            ### delete_token( $token );
+                                                            delete_token( $token );
                                                             last SWITCH; 
                                                        };
             ( (    $action eq 'updateboard'
@@ -424,18 +507,24 @@ sub _do_admin_listboards{
                                                             last SWITCH;
                                                        };
             ($action eq 'addboard')           &&    do {    check_token_data( $token, 'newboard' );
-                                                            my $board = transientnew Bugzilla::Extension::PAMBAAN::Board ( $vars->{cgi_variables}->{'name'} );
-                                                            $self->_capture_board( $board, $cgi_vars );
-                                                            $board = Bugzilla::Extension::PAMBAAN::Board->create( $board );
+                                                            my $dbh = Bugzilla->dbh;
+                                                            # Must wrap creation of board an lane in transaction.
+                                                            # Else any errors in creating the lane will leave a board without lane.
+                                                            $dbh->bz_start_transaction();
+                                                                my $board = Bugzilla::Extension::PAMBAAN::Board->NEWTEMPLATE;
+                                                                $self->_capture_board( $board, $cgi_vars );
+                                                                $board = Bugzilla::Extension::PAMBAAN::Board->create( $board );
+                                                                
+                                                                my $lane = Bugzilla::Extension::PAMBAAN::Lane->NEWTEMPLATE;
+                                                                $self->_capture_lane( $lane, $cgi_vars );
+                                                                # won't allow a lane without a name
+                                                                # don't want to run in validation
+                                                                if ( defined $lane->name() && $lane->name() ne "" ) {
+                                                                    $lane->board_id( $board->id );
+                                                                    Bugzilla::Extension::PAMBAAN::Lane->create( $lane );
+                                                                }
+                                                            $dbh->bz_commit_transaction();
                                                             
-                                                            my $lane = transientnew Bugzilla::Extension::PAMBAAN::Lane( "New Lane" );
-                                                            $self->_capture_lane( $lane, $cgi_vars );
-                                                            # won't allow a lane without a name
-                                                            # don't want to run in validation
-                                                            if ( defined $lane->name() && $lane->name() ne "" ) {
-                                                                $lane->board_id( $board->id );
-                                                                Bugzilla::Extension::PAMBAAN::Lane->create( $lane );
-                                                            }
                                                             delete_token( $token );
                                                             last SWITCH;
                                                        };
@@ -453,6 +542,7 @@ sub _do_admin_listboards{
 
     my @boards = Bugzilla::Extension::PAMBAAN::Board->get_all( {with_lanes=>1} ); # Should consider this ..
     $vars->{all_pambaan_boards} = \@boards;
+    $vars->{token} = issue_session_token( 'deleteboard' );
 }
 
 sub page_before_template {

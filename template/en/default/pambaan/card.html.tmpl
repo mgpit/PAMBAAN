@@ -1,0 +1,73 @@
+[%#
+  # The contents of this file are subject to the Mozilla Public
+  # License Version 1.1 (the "License"); you may not use this file
+  # except in compliance with the License. You may obtain a copy of
+  # the License at http://www.mozilla.org/MPL/
+  #
+  # Software distributed under the License is distributed on an "AS
+  # IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+  # implied. See the License for the specific language governing
+  # rights and limitations under the License.
+  #
+  # The Original Code is the Bugzilla Example Plugin.
+  #
+  # The Initial Developer of the Original Code is Canonical Ltd.
+  # Portions created by Canonical Ltd. are Copyright (C) 2009
+  # Canonical Ltd. All Rights Reserved.
+  #
+  # Contributor(s): 
+  #     Marco Pauls <info@mgp-it-de>
+  #%]
+  
+  [% PROCESS bug/time.html.tmpl %]
+  
+    [% IF lanedef.wants_blocked_bugs_noncontributing AND bug.has_blockers %]
+        [% PROCESS readonly_card %]
+    [% ELSE %]
+        [% PROCESS regular_card %]
+    [% END %]
+                
+        [% BLOCK regular_card %]
+                        <li class="regular_card [% bug.bug_status | replace('\s+', '_') %]">
+                            <div class="pb_cardfirst darken">
+                                <span class="pb_bugid"><a href="[% urlbase FILTER html IF full_url %]show_bug.cgi?id=[% bug.bug_id FILTER uri %]">[% bug.bug_id %]</a></span>
+                                <span title="[% bug.short_desc %]">[% bug.short_desc %]</span>
+                            </div>
+                        [% IF lanedef.card_show_product %]
+                            <div class="pb_cardother" title="Product: [% bug.product %] | Component: [% bug.component %]">Is in: [% bug.product %] | [% bug.component %]</div>
+                        [% END %]
+                        [% IF lanedef.card_show_importance %]
+                            <div class="pb_cardother" title="Importance: [% bug.priority %] | [% bug.bug_severity %]">
+                                Importance: <span class="[% bug.priority %]">[% bug.priority %]</span> | <span class="[% bug.bug_severity %]">[% bug.bug_severity %]</span>
+                            </div>
+                        [% END %]
+                        [% IF lanedef.card_show_bug_status %]
+                            <div class="pb_cardother right"><strong>[%bug.bug_status %]</strong></div>
+                        [% END %]
+                        [% IF lanedef.card_show_asignee %]
+                            <div class="pb_cardother">Assignee: <strong>[% bug.assigned_to_realname %]</strong></div>
+                        [% END %]
+                        [% IF lanedef.card_show_timetracking && user.is_timetracker %]
+                            <div class="pb_cardother">
+                            [% IF bug.deadline %]<img src="extensions/PAMBAAN/web/images/calendar.png" alt="Deadline is [% bug.deadline FILTER html %]" title="Deadline is [% bug.deadline FILTER html %]">[% END %]
+                            <meter min="0" max="100" low="30" high="90" value="[% bug.percentage_complete %]" 
+                            title="Percentage completed: [% bug.percentage_complete || 0 %]%.
+         Velocity is [% bug.velocity || 'n/a' %]">
+                            [% bug.percentage_complete %]</meter> ([% bug.percentage_complete %]%) 
+                            [% PROCESS formattimeunit time_unit=bug.actual_time %]/[% PROCESS formattimeunit time_unit=(bug.actual_time + bug.remaining_time) %] hrs worked
+                            [%# bug.estimated_time %] 
+                            
+                            </div>
+                        [% END %]
+                        </li>
+
+        [% END %]
+    
+        [% BLOCK readonly_card %]
+                        <li class="readonly_card [% bug.bug_status | replace('\s+', '_') %]">
+                            <div class="pb_cardfirst darken">
+                                <span class="pb_bugid"><a href="[% urlbase FILTER html IF full_url %]show_bug.cgi?id=[% bug.bug_id FILTER uri %]">[% bug.bug_id %]</a></span>
+                                <span title="[% bug.short_desc %]">[% bug.short_desc %]</span>
+                            </div>
+                        </li>
+        [% END %]

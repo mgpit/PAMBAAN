@@ -26,6 +26,7 @@
     -webkit-align-items: stretch;
             align-items: stretch;
     overflow: hidden;
+    background-color: Beige;
 }
 
 .pambaanboard_lane {
@@ -55,6 +56,7 @@
 #pambaanboard_header {
     margin: 0 2px 2px 2px; 
     padding: 0 4px 2px 4px;
+    min-height: 2rem;
     font-size: 76%;
     text-align: right;
     background-color: rgba( 96,96,96,0.1);
@@ -104,7 +106,7 @@ ul.pb_lanecontent {
 /* ---------------------------------------------------------------------- */
 
 .withbugcount {
-    /*position: relative;*/
+    
 }
 
 .bugcount {
@@ -121,6 +123,9 @@ ul.pb_lanecontent {
     display: inline-block; margin-right: 3px; margin-left: 3px;
 }
 
+.bugcount img {
+    border: solid transparent 1px;
+}
 
 /* ----------------------------------------------------------------------
    ---------------------------------------------------------------------- */
@@ -146,21 +151,34 @@ ul.pb_lanecontent {
     padding: 0 2px 0 2px;
 }
 
-ul.pb_lanecontent li {
-    margin: 5px 5px 0 0;
-    padding: 3px;
-    border: solid gray 1px;
-    border-radius: 5px;
-    display: inline-block;
-    width: 12rem; max-width: 12rem;
-    box-shadow: 2px 2px 3px 0 rgba( 127,127,127, 0.7 );
-}
-
 /* ----------------------------------------------------------------------
    The Pambaan Card
    ---------------------------------------------------------------------- */
 
-div.pb_cardother, div.pb_cardfirst {
+ul.pb_lanecontent li {
+    margin: 5px 5px 0 0;
+    display: inline-block;
+    border-radius: 5px;
+    box-shadow: 2px 2px 3px 0 rgba( 127,127,127, 0.7 );
+}
+    
+ul.pb_lanecontent li.regular_card, ul.pb_lanecontent li.readonly_card {
+    background-color: BlanchedAlmond;
+    padding: 3px;
+}
+
+ul.pb_lanecontent li.regular_card {
+    border: solid gray 2px;
+    width: 12rem; max-width: 12rem;
+}
+
+ul.pb_lanecontent li.readonly_card {
+    color: #303030;
+    border: dashed gray 2px;
+    width: 6rem; max-width: 6rem;
+}
+
+div.pb_cardother, div.pb_cardfirst, .readony_content {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
@@ -171,16 +189,40 @@ div.pb_cardother {
     margin-top: 2px;
 }
 
+div.pb_cardother meter {
+    padding: 0; margin: 1px 3px 0 0;
+    width: 50px; color: red;
+    border: dotted rgba( 0,0,0,.3) 1px;
+    vertical-align: baseline;
+}
+
+div.pb_cardother img {
+    border: none; 
+    padding: 0; margin: 0; margin-right: 3px;
+    vertical-align: baseline;
+}
 
 span.pb_bugid {
     margin: 0 3px 0 3px; 
     padding: 0 2px 0 2px;
-    border: dotted gray 1px;
-    background-color: rgba( 127,127,17, 0.3 );
+    background-color: rgba( 0,0,0, 0.3 ); 
+    font-size: 120%;
+}
+
+span.pb_bugid a, span.pb_bugid a:link {
+    color: white
+}
+
+span.pb_bugid a:hover, span.pb_bugid a:active {
+    background-color: gray; color: black;
 }
 
 .right {
     text-align: right; padding-right: 0.7ex;
+}
+
+.darken {
+    background-color: rgba(64,64,64,.3);
 }
 
 
@@ -200,9 +242,11 @@ span.pb_bugid {
     padding: 0.33ex 1ex 0.33ex 1ex;
 }
 
-.pambaan_styled_table th {
+.pambaan_styled_table th, .tableseparatorrow {
     background-color: rgba( 127,127,127, 0.7 );
+    font-weight: bold;
 }
+
 
 .header_in_column th {
     text-align: right;
@@ -210,13 +254,8 @@ span.pb_bugid {
     vertical-align: top;
 }
 
-.header_in_column th label:after,
-.header_in_column th label::after {
-    content: ":";
-}
 
-
-label[title]::before {
+th label[title]::before, th span[title]::before {
     content: "?";
     font-weight: normal;
     font-size: 80%;

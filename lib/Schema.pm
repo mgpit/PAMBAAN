@@ -190,15 +190,29 @@ sub add_fields_to_other_entities {
 }
 
 
-sub schema_version_0002 {
-    
-    pkn( 'BoardLanes' )->do_schema_0002;
-      
+sub schema_version_000200 {
+    pkn('BoardLanes')->do_schema_000200;
+}
+
+sub schema_version_000500 {
+    pkn('BoardLanes')->do_schema_000500;
+}
+
+sub schema_version_000600 {
+    pkn('Boards')->do_schema_000600;
+}
+
+sub schema_version_000601 {
+    pkn('Boards')->do_schema_000601;
+    pkn('BoardLanes')->do_schema_000601;
 }
 
 sub add_fields_to_pambaan {
     print "\n\nAdding new fields to PAMBAAN entities ...\n" if IN_COMMAND_LINE;
-    schema_version_0002();
+    schema_version_000200;
+    schema_version_000500;
+    schema_version_000600;
+    schema_version_000601;    
 }
 
 
@@ -231,3 +245,10 @@ sub pambaan_schema_init {
 
 __END__
 
+
+=head1 NAME
+
+Bugzilla::Extension::PAMBAAN::Schema.
+
+The Schema definitions for SimpleKanban.
+=cut

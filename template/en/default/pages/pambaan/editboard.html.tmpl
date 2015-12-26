@@ -51,8 +51,44 @@
             <tr><th><label for="description" title="Description for the board. Mandatory.">Description</label></th>
                 <td><textarea id="description" name="description" rows="3" cols="60">[% pambaan_board.description FILTER html %]</textarea></td>      
             </tr>
-            <tr><th><label for="defaultBoard" title="Make this board the default board.">Default?</label></th>
-                <td><input id="defaultBord" name="defaultBoard" type="checkbox" value="1" [% 'checked' IF pambaan_board.defaultBoard %]/></td>
+            <tr><th>&nbsp; [%# <label for="defaultBoard" title="Make this board the global default board.">Default?</label> %] </th>
+                <td><input id="defaultBord" name="defaultBoard" type="checkbox" value="1" [% 'checked' IF pambaan_board.defaultBoard %]/>
+                 Make this board the default board.
+                </td>
+            </tr>
+            <tr><td colspan="2" class="tableseparatorrow">Additional [% $terms.bug %] selection restrictions</td></tr>
+
+            <tr><th>&nbsp;<span title="Define how to deal with blocked [% terms.bugs %] in a [% terms.Lane %]">Blocked [% terms.Bugs %] handling</span></th>
+                <td>
+                    <input id="blocked_bugs_handling_DISPLAY" name="blocked_bugs_handling" type="radio" value="DISPLAY"
+                     title="Display all matching [% terms.bugs %]" [% 'checked' IF pambaan_board.blocked_bugs_handling == 'DISPLAY' %]>
+                        <label for="blocked_bugs_handling_DISPLAY" 
+                     title="Display all matching [% terms.bugs %]">Display</display>
+                
+                    <input id="blocked_bugs_handling_NONCONTRIBUTING" name="blocked_bugs_handling" type="radio" value="NONCONTRIBUTING"
+                     title="Show all blocked [% terms.bugs %] but let them not contribute to the Work in Progress for a [% terms.lane %]." [% 'checked' IF pambaan_board.blocked_bugs_handling == 'NONCONTRIBUTING' %]>
+                        <label for="blocked_bugs_handling_NONCONTRIBUTING" 
+                     title="Show all blocked [% terms.bugs %] but let them not contribute to the Work in Progress for a [% terms.lane %].">Non Contributing</label>
+                
+                    <input id="blocked_bugs_handling_HIDE" name="blocked_bugs_handling" type="radio" value="HIDE"
+                     title="Hide all [% terms.bugs %] which are blocked by at least one bug." [% 'checked' IF pambaan_board.blocked_bugs_handling == 'HIDE' %]>
+                        <label for="blocked_bugs_handling_HIDE" 
+                     title="Hide all [% terms.bugs %] which are blocked by at least one bug.">Hide</label>
+                </td> 
+            </tr>
+
+            <tr><th>&nbsp;<span title="Define if the Board should display only those [% terms.bugs %] where the current user is the assignee.">Assignee Restriction</span></th>
+                <td>
+                    <input id="restrict_to_assignee_currusr_YES", name="restrict_to_assignee_currusr" type="radio" value="Y" [% 'checked' IF pambaan_board.restrict_to_assignee_currusr == 'Y' %]
+                     title="Yes. Restrict the [% terms.bugs %] fetched to those [% terms.bugs %] where the current user is the assignee">
+                     <label for="restrict_to_assignee_currusr_YES"
+                     title="Yes. Restrict the [% terms.bugs %] fetched to those [% terms.bugs %] where the current user is the assignee">Yes</input>
+                
+                    <input id="restrict_to_assignee_currusr_NO", name="restrict_to_assignee_currusr" type="radio" value="N" [% 'checked' IF pambaan_board.restrict_to_assignee_currusr == 'N' %]
+                     title="No. Use standard behaviour and display all the [% terms.bugs %] where the current has access">
+                     <label for="restrict_to_assignee_currusr_NO"
+                     title="No. Use standard behaviour and display all the [% terms.bugs %] where the current has access">No</input>
+                </td>
             </tr>
         </table>
         

@@ -71,7 +71,29 @@ sub ddl {
 }
 
 
+sub do_schema_000600 {
+    my $dbh = Bugzilla->dbh;
+
+    $dbh->bz_add_column( tablename(), 'blocked_bugs_handling', { TYPE=>'varchar(12)', NOTNULL=>1, DEFAULT=>qq('DISPLAY') } );
+}
+
+sub do_schema_000601 {
+    my $dbh = Bugzilla->dbh;
+    
+    $dbh->bz_alter_column( tablename(), 'blocked_bugs_handling', { TYPE=>'varchar(15)', NOTNULL=>1, DEFAULT=>qq('DISPLAY') } );
+
+    $dbh->bz_add_column( tablename(), 'restrict_to_assignee_currusr', { TYPE=>'CHAR', NOTNULL=>1, DEFAULT=>qq('N')} );  
+}
+
 
 1;
 
 __END__
+
+
+=head1 NAME
+
+Bugzilla::Extension::PAMBAAN::Schema::Tables::Boards
+
+The Schema definitions for the C<pambaan_boards> table.
+=cut
