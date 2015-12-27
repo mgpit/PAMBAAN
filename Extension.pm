@@ -24,7 +24,7 @@ use strict;
 
 use base qw(Bugzilla::Extension Exporter);
 our @EXPORT = qw();  
-our $version="0.4.1";
+our $version="0.6.2";
 
 use Bugzilla;
 use Bugzilla::Error;

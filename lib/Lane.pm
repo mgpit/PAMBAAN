@@ -22,7 +22,7 @@
 package Bugzilla::Extension::PAMBAAN::Lane;
 use strict;
 
-our $version="0.6.0";
+our $version="0.6.2";
 
 use base qw(Bugzilla::Object Exporter);
 our @EXPORT = qw();

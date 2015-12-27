@@ -26,6 +26,7 @@ use Data::Dumper;
 our @EXPORT = qw(
     allowed_for_pambaan
 );
+our $version="0.6.2";
 
 sub allowed_for_pambaan {
     my $throwerror = shift;

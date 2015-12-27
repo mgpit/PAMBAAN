@@ -23,6 +23,8 @@
 package Bugzilla::Extension::PAMBAAN::Search;
 use strict;
 use base qw(Bugzilla::Search Exporter);
+our @EXPORT = qw();  
+our $version="0.6.2";
 
 use Data::Dumper;
 

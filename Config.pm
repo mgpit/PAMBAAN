@@ -22,7 +22,7 @@
 package Bugzilla::Extension::PAMBAAN;
 use strict;
 
-our $version="0.4.1";
+our $version="0.6.2";
 use constant NAME => 'PAMBAAN';
 
 

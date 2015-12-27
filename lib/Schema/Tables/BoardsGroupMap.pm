@@ -24,6 +24,7 @@ use strict;
 use base qw(Exporter);
 our @EXPORT = qw(
 );
+our $version="0.6.2";
 
 use Data::Dumper;
 
